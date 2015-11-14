@@ -1,0 +1,33 @@
+import random
+import math
+alpha = 0.35
+z = 64
+
+def b():
+    string = ""
+    for i in range(10):
+        string += str(random.randint(0,1))
+    return string
+
+def generate_n_samples(n):
+    samples = []
+    for i in range(n):
+        samples.append(b())
+    return samples
+
+def prob_Z_given_B(b):
+    return (1+alpha)/(1-alpha) * pow(alpha, abs(z-int(b,2)))
+
+def final_function(n):
+    samples = generate_n_samples(n)
+    prob_b7 = 0
+    prob_b = 0
+    for sample in samples:
+        if sample[6] == "1":
+            prob_b7 += prob_Z_given_B(sample)
+        prob_b += prob_Z_given_B(sample)
+    #print samples
+    print prob_b7/prob_b
+    return
+
+final_function(1000000)
