@@ -1,0 +1,89 @@
+import numpy
+import urllib
+import scipy.optimize
+import random
+from math import exp
+from math import log
+import math
+
+
+X = []
+for value in  open("nasdaq00.txt"):
+  X.append(float(value.split()[0]))
+
+#print X[:10]
+
+
+Y = []
+for value in  open("nasdaq01.txt"):
+  Y.append(float(value.split()[0]))
+
+#print Y[:10]
+
+
+x1 = X[:len(X)-3]
+#print x1
+x2 = X[1:len(X)-2]
+x3 = X[2:len(X)-1]
+y = X[3:]
+
+
+
+def feature(i):
+  feat = []
+  feat.append(x3[i])
+  feat.append(x2[i])
+  feat.append(x1[i])
+  return feat
+  
+final_data = [feature(i) for i in range(len(X)-3)]
+
+print final_data[0]
+
+theta,residuals,rank,s = numpy.linalg.lstsq(final_data, y)
+
+print "Coefficients a1, a2, a3 are ", theta
+
+
+a1 = theta[0]
+a2 = theta[1]
+a3 = theta[2]
+
+def prob(x1, x2, x3, x4):
+	return pow(2*math.pi, -0.5) * math.exp(-0.5 * pow((x4 - a1 * x1 - a2 * x2 - a3 * x3),2))
+
+	
+def logprob(i):
+	return prob(x3[i], x2[i], x1[i], y[i])
+#print prob(1,2,3,4)
+#print logprob(0)
+
+sum = 0
+
+for i in range(len(x1)):
+	sum += logprob(i)
+	
+print "log likelihood = ",  sum
+
+print "MSE1 = ", residuals * 1.0/len(x3)
+
+################2nd part
+
+y1 = Y[2:len(Y)-1]
+#print x1
+y2 = Y[1:len(Y)-2]
+y3 = Y[:len(Y)-3]
+y4 = Y[3:]
+
+def MSE(y1,y2,y3,y4):
+	return (y4 - a1 * y1 - a2 * y2 - a3 * y3)**2
+	
+def MSEall(i):
+	return MSE(y1[i],y2[i],y3[i],y4[i])
+
+sum = 0
+
+for i in range(len(y4)):
+	sum += MSEall(i)
+
+print "MSE2 = ", sum * 1.0 / len(y4)
