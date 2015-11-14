@@ -1,0 +1,325 @@
+
+import math
+import matplotlib.pyplot as plt
+
+vocab_list = []
+unigram_count_list = []
+unigram_probabilities = []
+
+bigram_array = []
+
+
+
+f = open('vocab.txt', 'r')
+
+
+g = open('unigram.txt', 'r')
+
+
+
+h = open('bigram.txt', 'r')
+
+
+
+for line in f:
+    #print line
+    #removing the newline character while creating the vocab list
+    vocab_list.append(line.strip('\n'))
+
+
+
+for line in g:
+    unigram_count_list.append(line.strip('\n'))
+
+
+
+
+for line in h:
+    d = line.strip('\n').split()
+    temp_list = []
+    #index_w1.append(d[0])
+    #index_w2.append(d[1])
+    #count_w1_w2.append(d[2])
+    temp_list.append(d[0])
+    temp_list.append(d[1])
+    temp_list.append(d[2])
+    
+    bigram_array.append(temp_list)
+
+
+#print bigram_array
+total_THE = 0
+
+for i in range(len(vocab_list)):
+    if vocab_list[i] == "THE":
+        total_THE += int(unigram_count_list[i])
+
+print total_THE
+
+
+
+total = 0
+
+for i in unigram_count_list:
+    total += int(i)
+
+
+
+for i in unigram_count_list:
+    unigram_probabilities.append(int(i) * 1.0 / total)
+
+
+
+#PART 1
+
+for i in range(len(vocab_list)):
+    if vocab_list[i][0] == "M":
+        #print "WORD = " +  vocab_list[i] + "\t PROBABILITY = " + str(unigram_probabilities[i])
+        pass
+
+
+
+#PART 2
+word = "THE"
+
+index_of_word_THE = vocab_list.index(word)
+
+print index_of_word_THE
+
+
+
+sorted(bigram_array, key=lambda row: int(row[2]), reverse=True)
+
+
+
+result = filter(lambda row: row[0] == str(index_of_word_THE + 1), sorted(bigram_array, key=lambda row: int(row[2]), reverse=True))[:10]
+
+
+
+for i in result:
+    print str(vocab_list[int(i[1])-1]) + " " + str(int(i[2]) * 1.0 / total_THE)
+
+
+
+
+
+#PART 3.1
+def word_index(word):
+    return vocab_list.index(word)
+
+
+
+#word_index('THE')
+
+
+
+sentence_words = ["THE", "STOCK", "MARKET", "FELL", "BY", "ONE", "HUNDRED", "POINTS", "LAST", "WEEK"]
+
+
+
+word_index_list = []
+for word in sentence_words:
+    word_index_list.append(word_index(word))
+#print word_index_list
+
+
+sentence_probabilities_list = []
+for i in word_index_list:
+    sentence_probabilities_list.append(unigram_probabilities[i])
+#print sentence_probabilities_list
+
+
+
+log_likelihood_unigram_total = 0
+for p in sentence_probabilities_list:
+    log_likelihood_unigram_total += math.log(p)
+
+print log_likelihood_unigram_total
+
+
+
+#PART 3.2
+def bigram_probability(secondword, firstword):
+    denominator = int(unigram_count_list[vocab_list.index(firstword)])
+    numerator = 0
+    for i in bigram_array:
+        if vocab_list[int(i[0]) - 1] == firstword:
+            if vocab_list[int(i[1]) - 1] == secondword:
+                numerator += int(i[2])
+    return numerator * 1.0/denominator
+
+
+
+bigram_probability('THE','<s>')
+
+
+
+#print int(unigram_count_list[vocab_list.index('<s>')])
+
+
+
+#for i in bigram_array:
+#        if vocab_list[int(i[0]) - 1] == '<s>':
+#            if vocab_list[int(i[1]) - 1] == 'THE':
+#                print int(i[2])
+
+
+
+bigram_probability_list = []
+
+
+bigram_sentence_words = ["<s>", "THE", "STOCK", "MARKET", "FELL", "BY", "ONE", "HUNDRED", "POINTS", "LAST", "WEEK"]
+
+
+
+def bigram_sentence_list ():
+    for i in range(len(bigram_sentence_words)-1):
+        bigram_probability_list.append(bigram_probability(bigram_sentence_words[i+1], bigram_sentence_words[i]))
+
+
+bigram_sentence_list()
+
+
+
+#print bigram_probability_list
+
+
+
+log_likelihood_bigram_total = 0
+for p in bigram_probability_list:
+    log_likelihood_bigram_total += math.log(p)
+
+print log_likelihood_bigram_total
+
+#PART 4.1
+sentence_words = ["THE", "SIXTEEN", "OFFICIALS", "SOLD", "FIRE", "INSURANCE"]
+
+
+
+word_index_list = []
+for word in sentence_words:
+    word_index_list.append(word_index(word))
+#print word_index_list
+
+
+
+sentence_probabilities_list = []
+for i in word_index_list:
+    sentence_probabilities_list.append(unigram_probabilities[i])
+#print sentence_probabilities_list
+
+
+
+log_likelihood_unigram_total = 0
+for p in sentence_probabilities_list:
+    log_likelihood_unigram_total += math.log(p)
+
+print log_likelihood_unigram_total
+
+
+
+#PART 4.2
+bigram_probability_list = []
+
+
+
+bigram_sentence_words = ["<s>", "THE", "SIXTEEN", "OFFICIALS", "SOLD", "FIRE", "INSURANCE"]
+
+
+
+def bigram_sentence_list ():
+    for i in range(len(bigram_sentence_words)-1):
+        bigram_probability_list.append(bigram_probability(bigram_sentence_words[i+1], bigram_sentence_words[i]))
+
+
+
+bigram_sentence_list()
+print bigram_probability_list
+
+
+
+log_likelihood_bigram_total = 0
+for p in bigram_probability_list:
+    try:
+        log_likelihood_bigram_total += math.log(p)
+    except:
+        print p
+        
+print log_likelihood_bigram_total
+
+
+
+
+
+
+#ACTUAL PART 5
+def unigram_probability(word):
+    return unigram_probabilities[vocab_list.index(word)]
+#unigram_probability("THE")
+
+
+
+def bigram_probability(secondword, firstword):
+    denominator = int(unigram_count_list[vocab_list.index(firstword)])
+    numerator = 0
+    for i in bigram_array:
+        if vocab_list[int(i[0]) - 1] == firstword:
+            if vocab_list[int(i[1]) - 1] == secondword:
+                numerator += int(i[2])
+    return numerator * 1.0/denominator
+#bigram_probability("THE", "<s>")
+
+
+
+def combined_probability(secondword, firstword,lam):
+    total_probability = lam * unigram_probability(secondword) + (1-lam) * bigram_probability(secondword, firstword)
+    return total_probability
+#combined_probability("THE", "<s>", 0)
+
+
+sentence_words = ["<s>", "THE", "SIXTEEN", "OFFICIALS", "SOLD", "FIRE", "INSURANCE"]
+
+
+def log_likelihood_mixed(lam):
+    probability_list = []
+    
+    for i in range(len(bigram_sentence_words)-1):
+        total_probability = combined_probability(sentence_words[i+1], sentence_words[i], lam)
+        probability_list.append(total_probability)
+        
+    log_likelihood_total = 0
+    for p in probability_list:
+        try:
+            log_likelihood_total += math.log(p)
+        except:
+            print p
+        
+    #print log_likelihood_total
+    return log_likelihood_total
+#log_likelihood_mixed(1)
+
+
+lambda_values = []
+log_likelihood_mixed_values = []
+def function_with_varying_lambda():
+    lam = 0.00
+    for i in range(101):
+        lambda_values.append(lam)
+        log_likelihood_mixed_values.append(log_likelihood_mixed(lam))
+        lam += 0.01
+
+
+function_with_varying_lambda()
+
+
+
+#lambda_values
+log_likelihood_mixed_values
+
+
+
+plt.plot(lambda_values, log_likelihood_mixed_values)
+
+
+
+plt.show()
