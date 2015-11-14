@@ -1,0 +1,140 @@
+__author__ = 'Rishabh'
+
+import operator
+import re
+from string import ascii_uppercase
+from copy import deepcopy
+
+dictionary = {}
+base_dictionary = dictionary.copy()
+
+#print base_dictionary
+
+total_word_count = 0
+wordlist = []
+countlist = []
+
+#opening the files and reading the corpus
+f = open('hw1_word_counts_05.txt','r')
+#f = open('random.txt', 'r')
+#f= open('hw1_word_counts_06.txt', 'r')
+for line in f:
+    data = line.split()
+    dictionary[str(data[0])] = int(data[1])
+
+#dictionary in sorted order for highest and lowest 8 terms
+sorted_dictionary_by_value = sorted(dictionary.items(), key = operator.itemgetter(1))
+
+#print sorted_dictionary_by_value
+
+#total_word_count calculation
+for key, value in dictionary.iteritems():
+    total_word_count += value
+
+#print total_count
+
+#printing the highest and lowest terms
+print "8 lowest frequency letters are " + str(sorted_dictionary_by_value[:8])
+print "\n8 highest frequecny letters are" + str(sorted_dictionary_by_value[-8:])
+
+
+
+for key in base_dictionary.iterkeys():
+    wordlist.append(key)
+for value in base_dictionary.itervalues():
+    countlist.append(value)
+
+
+#print wordlist
+
+#print countlist
+
+
+base_probability_list = []
+
+#probability of word - 1st formula
+def probability_of_word(word):
+    for key in dictionary.iterkeys():
+        if key == word:
+            base_probability_list.append(dictionary[key]*1.0/total_word_count)
+    return dictionary[word]*1.0/total_word_count
+
+#probability_of_word('THREE')
+
+#print base_probability_list
+
+#probability of evidence given a word - use for further calculation - can only take 1 or 0 value - 1st formula
+def probability_of_evidence_given_word(evidence, missing, word):
+#adjusted for missing, duplicate and pattern match
+    for i in range(len(missing)):
+        if missing[i] in word:
+            return 0
+        else:
+            p = re.compile(evidence)
+            m = p.search(word)
+            flag = 0
+            if m:
+                for i in range(len(evidence)):
+                    if evidence[i] == word[i] or evidence[i] == '.':
+                        flag = 1
+                    else:
+                        flag = 0
+                    if(flag == 1):
+                        for i in range(len(evidence)):
+                            for j in range(len(word)):
+                                if i!=j and word[i] == evidence[j]:
+                                    return 0
+                                else:
+                                    return 1
+                    else:
+                        return 0
+            else:
+                return 0
+
+
+
+
+#test
+#print probability_of_evidence_given_word('A...A', 'D', 'ABODA')
+
+
+#result calculation for the first word
+def probability_of_word_given_evidence(word, evidence, missing):
+    numerator = 0.0
+    denominator = 0.0
+    for key in dictionary.iterkeys():
+        denominator += 1.0 * probability_of_evidence_given_word(evidence, missing, key) * probability_of_word(key)
+    numerator += 1.0 *probability_of_evidence_given_word(evidence, missing, word) * probability_of_word(word)
+    #print "numerator = " + str(numerator) + "denominator = " + str(denominator)
+    return numerator * 1.0 /denominator
+#test
+#print probability_of_word_given_evidence('ABODE', 'A....', '')
+
+def probability_of_letter_appearing_given_word(letter,word):
+    if letter in word:
+        return 1.0
+    else:
+        return 0.0
+#print probability_of_letter_appearing_given_word('J', 'ABODE')
+def probability_of_letter_occuring_given_evidence(letter, evidence, missing):
+    total = 0.0
+    for word in wordlist:
+        total += probability_of_letter_appearing_given_word(letter,word) * 1.0 * probability_of_word_given_evidence(word, evidence, missing)
+    return total
+
+alphabet_list = []
+alphabet_probability_list = []
+
+def main_function(evidence, missing):
+    for alphabet in ascii_uppercase:
+        alphabet_list.append(alphabet)
+        alphabet_probability_list.append(probability_of_letter_occuring_given_evidence(alphabet, evidence, missing))
+
+    max_probability = max(alphabet_probability_list)
+    max_alphabet = alphabet_list[alphabet_probability_list.index(max_probability)]
+
+    print "ALPHABET = " + str(max_alphabet) + " PROBABILITY = " + str(max_probability)
+
+    return
+
+main_function('.....', '')
